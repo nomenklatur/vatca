@@ -1,6 +1,9 @@
 package com.example.ui.settings
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,6 +24,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,11 +45,9 @@ import com.example.data.local.PreferencesManager
 import com.example.data.model.AppThemeMode
 import com.example.data.model.LibraryLayout
 import com.example.data.model.LibrarySort
-import com.example.data.model.PageMargin
 import com.example.data.model.PageSpacing
 import com.example.data.model.ReaderTheme
 import com.example.data.model.ReadingMode
-import com.example.data.model.ScreenOrientationPref
 import com.example.data.model.UserPreferences
 import kotlinx.coroutines.launch
 
@@ -59,24 +63,46 @@ fun SettingsScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
-                title = { Text("Settings", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = onBack,
-                        modifier = Modifier.testTag("settings_back_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Settings",
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold)
                         )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = onBack,
+                            modifier = Modifier
+                                .size(44.dp)
+                                .testTag("settings_back_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.onBackground
+                    )
                 )
-            )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant)
+                )
+            }
         }
     ) { innerPadding ->
         LazyColumn(
@@ -95,9 +121,9 @@ fun SettingsScreen(
                 SettingsCard {
                     Text(
                         text = "Application Theme",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -108,7 +134,12 @@ fun SettingsScreen(
                                 onClick = {
                                     coroutineScope.launch { preferencesManager.setAppTheme(mode) }
                                 },
-                                label = { Text(mode.title) }
+                                shape = RoundedCornerShape(8.dp),
+                                label = { Text(mode.title) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             )
                         }
                     }
@@ -123,9 +154,9 @@ fun SettingsScreen(
                 SettingsCard {
                     Text(
                         text = "Default View Layout",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         LibraryLayout.values().forEach { layout ->
                             FilterChip(
@@ -133,7 +164,12 @@ fun SettingsScreen(
                                 onClick = {
                                     coroutineScope.launch { preferencesManager.setLibraryLayout(layout) }
                                 },
-                                label = { Text(layout.title) }
+                                shape = RoundedCornerShape(8.dp),
+                                label = { Text(layout.title) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             )
                         }
                     }
@@ -142,9 +178,9 @@ fun SettingsScreen(
 
                     Text(
                         text = "Default Sorting Order",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         LibrarySort.values().forEach { sort ->
                             FilterChip(
@@ -152,7 +188,12 @@ fun SettingsScreen(
                                 onClick = {
                                     coroutineScope.launch { preferencesManager.setLibrarySort(sort) }
                                 },
-                                label = { Text(sort.title) }
+                                shape = RoundedCornerShape(8.dp),
+                                label = { Text(sort.title) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             )
                         }
                     }
@@ -167,9 +208,9 @@ fun SettingsScreen(
                 SettingsCard {
                     Text(
                         text = "Default Reader Backdrop",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         ReaderTheme.values().forEach { theme ->
                             FilterChip(
@@ -177,7 +218,12 @@ fun SettingsScreen(
                                 onClick = {
                                     coroutineScope.launch { preferencesManager.setReaderTheme(theme) }
                                 },
-                                label = { Text(theme.title) }
+                                shape = RoundedCornerShape(8.dp),
+                                label = { Text(theme.title) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             )
                         }
                     }
@@ -186,9 +232,9 @@ fun SettingsScreen(
 
                     Text(
                         text = "Default Reading Mode",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         ReadingMode.values().forEach { mode ->
                             FilterChip(
@@ -196,7 +242,12 @@ fun SettingsScreen(
                                 onClick = {
                                     coroutineScope.launch { preferencesManager.setReadingMode(mode) }
                                 },
-                                label = { Text(mode.title) }
+                                shape = RoundedCornerShape(8.dp),
+                                label = { Text(mode.title) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             )
                         }
                     }
@@ -205,9 +256,9 @@ fun SettingsScreen(
 
                     Text(
                         text = "Default Page Spacing",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         PageSpacing.values().forEach { spacing ->
                             FilterChip(
@@ -215,7 +266,12 @@ fun SettingsScreen(
                                 onClick = {
                                     coroutineScope.launch { preferencesManager.setPageSpacing(spacing) }
                                 },
-                                label = { Text(spacing.title) }
+                                shape = RoundedCornerShape(8.dp),
+                                label = { Text(spacing.title) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             )
                         }
                     }
@@ -229,21 +285,21 @@ fun SettingsScreen(
             item {
                 SettingsCard {
                     Text(
-                        text = "Vatca v1.0",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        text = "Vatca • Serene Editorial Reader",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Minimal, calm, and offline-first native Android PDF reader.\n" +
+                        text = "A paper-first digital sanctuary for long-form study, research, and reading.\n\n" +
+                                "• Archival paper-inspired palette and Inter typography\n" +
                                 "• 100% private: no tracking, accounts, or analytics\n" +
-                                "• Zero ads and completely free\n" +
-                                "• High performance native Android PdfRenderer\n" +
-                                "• Reading progress stored locally on your device",
+                                "• High-performance native Android PdfRenderer\n" +
+                                "• Reading progress and library stored locally on your device",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(28.dp))
             }
         }
     }
@@ -259,11 +315,14 @@ private fun SectionHeader(icon: androidx.compose.ui.graphics.vector.ImageVector,
             imageVector = icon,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(end = 8.dp)
+            modifier = Modifier
+                .size(18.dp)
+                .padding(end = 4.dp)
         )
+        Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.primary
         )
     }
@@ -273,11 +332,12 @@ private fun SectionHeader(icon: androidx.compose.ui.graphics.vector.ImageVector,
 private fun SettingsCard(content: @Composable () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)

@@ -8,45 +8,58 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFFBBF24),
-    onPrimary = Color(0xFF451A03),
-    primaryContainer = Color(0xFF78350F),
-    onPrimaryContainer = Color(0xFFFEF3C7),
-    secondary = Color(0xFF94A3B8),
-    onSecondary = Color(0xFF0F172A),
-    background = DarkBackground,
-    onBackground = DarkOnSurface,
-    surface = DarkSurface,
-    onSurface = DarkOnSurface,
-    surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = DarkOnSurfaceVariant,
-    outline = DarkOutline
+    primary = EditorialPrimaryDark,
+    onPrimary = EditorialOnPrimaryDark,
+    primaryContainer = EditorialPrimaryContainerDark,
+    onPrimaryContainer = EditorialPrimaryDark,
+    secondary = EditorialSage,
+    onSecondary = EditorialOnPrimaryDark,
+    secondaryContainer = EditorialSurfaceVariantDark,
+    onSecondaryContainer = EditorialSage,
+    tertiary = EditorialGold,
+    onTertiary = EditorialOnGold,
+    background = EditorialCanvasDark,
+    onBackground = EditorialTextPrimaryDark,
+    surface = EditorialSurfaceDark,
+    onSurface = EditorialTextPrimaryDark,
+    surfaceVariant = EditorialSurfaceVariantDark,
+    onSurfaceVariant = EditorialTextSecondaryDark,
+    outline = EditorialHairlineDark,
+    outlineVariant = EditorialHairlineDark,
+    error = EditorialError,
+    onError = EditorialOnError
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFFB45309),
-    onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFFEF3C7),
-    onPrimaryContainer = Color(0xFF78350F),
-    secondary = VatcaSlate,
-    onSecondary = Color(0xFFFFFFFF),
-    background = LightBackground,
-    onBackground = LightOnSurface,
-    surface = LightSurface,
-    onSurface = LightOnSurface,
-    surfaceVariant = LightSurfaceVariant,
-    onSurfaceVariant = LightOnSurfaceVariant,
-    outline = LightOutline
+    primary = EditorialPrimaryNavy,
+    onPrimary = EditorialOnPrimary,
+    primaryContainer = EditorialPrimaryContainer,
+    onPrimaryContainer = EditorialOnPrimaryContainer,
+    secondary = EditorialSage,
+    onSecondary = EditorialOnPrimary,
+    secondaryContainer = EditorialSageContainer,
+    onSecondaryContainer = EditorialOnSageContainer,
+    tertiary = EditorialGold,
+    onTertiary = EditorialOnGold,
+    background = EditorialCanvasLight,
+    onBackground = EditorialTextPrimaryLight,
+    surface = EditorialSurfaceLight,
+    onSurface = EditorialTextPrimaryLight,
+    surfaceVariant = EditorialSurfaceVariantLight,
+    onSurfaceVariant = EditorialTextSecondaryLight,
+    outline = EditorialHairlineLight,
+    outlineVariant = EditorialHairlineLight,
+    error = EditorialError,
+    onError = EditorialOnError
 )
 
 @Composable
 fun VatcaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Keep consistent Vatca editorial branding by default
+    dynamicColor: Boolean = false, // Keep consistent Serene Editorial styling
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
@@ -60,7 +73,7 @@ fun VatcaTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = VatcaTypography,
         content = content
     )
 }

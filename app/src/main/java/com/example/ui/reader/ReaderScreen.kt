@@ -10,12 +10,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,35 +44,34 @@ import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -103,8 +101,12 @@ import com.example.data.model.ReaderTheme
 import com.example.data.model.ReadingMode
 import com.example.data.model.ScreenOrientationPref
 import com.example.data.model.UserPreferences
+import com.example.ui.theme.EditorialGold
+import com.example.ui.theme.ReaderThemeBlackBg
+import com.example.ui.theme.ReaderThemeParchmentBg
+import com.example.ui.theme.ReaderThemeSlateBg
+import com.example.ui.theme.ReaderThemeWhiteBg
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 
 @Composable
 fun ReaderScreen(
@@ -132,10 +134,13 @@ fun ReaderScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 2.5.dp
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Opening document...",
+                        text = "Preparing volume...",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -155,7 +160,8 @@ fun ReaderScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(24.dp),
@@ -164,13 +170,13 @@ fun ReaderScreen(
                         Icon(
                             imageVector = Icons.Default.ErrorOutline,
                             contentDescription = "Error",
-                            modifier = Modifier.size(48.dp),
+                            modifier = Modifier.size(44.dp),
                             tint = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Cannot Open Document",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                            text = "Cannot Open Volume",
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -182,12 +188,22 @@ fun ReaderScreen(
                         )
                         Spacer(modifier = Modifier.height(24.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            OutlinedButton(onClick = onBackToLibrary) {
-                                Text("Back to Library")
+                            OutlinedButton(
+                                onClick = onBackToLibrary,
+                                shape = RoundedCornerShape(12.dp),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                            ) {
+                                Text("Back to Library", style = MaterialTheme.typography.labelLarge)
                             }
                             if (state.canRetry) {
-                                Button(onClick = { viewModel.retryLoading() }) {
-                                    Text("Retry")
+                                Button(
+                                    onClick = { viewModel.retryLoading() },
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary
+                                    )
+                                ) {
+                                    Text("Retry", style = MaterialTheme.typography.labelLarge)
                                 }
                             }
                         }
@@ -215,7 +231,6 @@ private fun ReaderContent(
     activity: Activity?,
     onBack: () -> Unit
 ) {
-    val coroutineScope = rememberCoroutineScope()
     var showSettingsSheet by remember { mutableStateOf(false) }
 
     // Handle Orientation preference
@@ -276,13 +291,13 @@ private fun ReaderContent(
         }
     }
 
-    // Resolve Reader Backdrop Color
+    // Resolve Reader Backdrop Color following Serene Editorial Paper Principles
     val readerBgColor = when (state.preferences.readerTheme) {
         ReaderTheme.SYSTEM -> MaterialTheme.colorScheme.background
-        ReaderTheme.WHITE -> Color(0xFFFFFFFF)
-        ReaderTheme.SEPIA -> Color(0xFFFBF0D9)
-        ReaderTheme.SLATE -> Color(0xFF1E222B)
-        ReaderTheme.BLACK -> Color(0xFF000000)
+        ReaderTheme.WHITE -> ReaderThemeWhiteBg
+        ReaderTheme.SEPIA -> ReaderThemeParchmentBg
+        ReaderTheme.SLATE -> ReaderThemeSlateBg
+        ReaderTheme.BLACK -> ReaderThemeBlackBg
     }
 
     Box(
@@ -312,7 +327,7 @@ private fun ReaderContent(
             )
         }
 
-        // Overlay Controls
+        // Overlay Top Controls
         AnimatedVisibility(
             visible = state.controlsVisible,
             enter = fadeIn() + slideInVertically { -it },
@@ -330,6 +345,7 @@ private fun ReaderContent(
             )
         }
 
+        // Overlay Bottom Controls
         AnimatedVisibility(
             visible = state.controlsVisible,
             enter = fadeIn() + slideInVertically { it },
@@ -383,7 +399,6 @@ private fun ContinuousPdfView(
 ) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialPage.coerceIn(0, session.pageCount - 1))
 
-    // Monitor visible page index
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
             .distinctUntilChanged()
@@ -534,7 +549,7 @@ private fun PdfPageItem(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(2.dp, shape = RoundedCornerShape(2.dp))
+            .shadow(2.dp, shape = RoundedCornerShape(4.dp))
             .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
@@ -560,9 +575,9 @@ private fun PdfPageItem(
                 )
             } else {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(28.dp),
+                    modifier = Modifier.size(24.dp),
                     strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
                 )
             }
         }
@@ -582,8 +597,9 @@ private fun ReaderTopControls(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-        shadowElevation = 4.dp
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        shadowElevation = 2.dp
     ) {
         TopAppBar(
             colors = TopAppBarDefaults.topAppBarColors(
@@ -592,11 +608,14 @@ private fun ReaderTopControls(
             navigationIcon = {
                 IconButton(
                     onClick = onBack,
-                    modifier = Modifier.testTag("reader_back_button")
+                    modifier = Modifier
+                        .size(44.dp)
+                        .testTag("reader_back_button")
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back to Library"
+                        contentDescription = "Back to Library",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             },
@@ -618,21 +637,27 @@ private fun ReaderTopControls(
             actions = {
                 IconButton(
                     onClick = onToggleFullscreen,
-                    modifier = Modifier.testTag("fullscreen_toggle_button")
+                    modifier = Modifier
+                        .size(44.dp)
+                        .testTag("fullscreen_toggle_button")
                 ) {
                     Icon(
                         imageVector = if (isFullscreen) Icons.Default.FullscreenExit else Icons.Default.Fullscreen,
-                        contentDescription = if (isFullscreen) "Exit fullscreen" else "Fullscreen reading"
+                        contentDescription = if (isFullscreen) "Exit fullscreen" else "Fullscreen reading",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
 
                 IconButton(
                     onClick = onOpenSettings,
-                    modifier = Modifier.testTag("reader_settings_button")
+                    modifier = Modifier
+                        .size(44.dp)
+                        .testTag("reader_settings_button")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Tune,
-                        contentDescription = "Reading settings"
+                        contentDescription = "Reading settings",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -655,13 +680,14 @@ private fun ReaderBottomControls(
             .fillMaxWidth()
             .padding(16.dp),
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-        shadowElevation = 6.dp
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        shadowElevation = 3.dp
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            // Scrubber Row
+            // Scrubber Row with Warm Gold Active Track
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -669,9 +695,13 @@ private fun ReaderBottomControls(
                 IconButton(
                     onClick = { if (currentPage > 0) onJumpToPage(currentPage - 1) },
                     enabled = currentPage > 0,
-                    modifier = Modifier.testTag("prev_page_button")
+                    modifier = Modifier.size(40.dp).testTag("prev_page_button")
                 ) {
-                    Icon(Icons.Default.ChevronLeft, contentDescription = "Previous page")
+                    Icon(
+                        Icons.Default.ChevronLeft,
+                        contentDescription = "Previous page",
+                        tint = if (currentPage > 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outlineVariant
+                    )
                 }
 
                 Slider(
@@ -679,6 +709,11 @@ private fun ReaderBottomControls(
                     onValueChange = { onJumpToPage(it.toInt()) },
                     valueRange = 0f..(pageCount - 1).coerceAtLeast(1).toFloat(),
                     steps = (pageCount - 2).coerceAtLeast(0),
+                    colors = SliderDefaults.colors(
+                        thumbColor = EditorialGold,
+                        activeTrackColor = EditorialGold,
+                        inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant
+                    ),
                     modifier = Modifier
                         .weight(1f)
                         .testTag("page_scrubber_slider")
@@ -687,9 +722,13 @@ private fun ReaderBottomControls(
                 IconButton(
                     onClick = { if (currentPage < pageCount - 1) onJumpToPage(currentPage + 1) },
                     enabled = currentPage < pageCount - 1,
-                    modifier = Modifier.testTag("next_page_button")
+                    modifier = Modifier.size(40.dp).testTag("next_page_button")
                 ) {
-                    Icon(Icons.Default.ChevronRight, contentDescription = "Next page")
+                    Icon(
+                        Icons.Default.ChevronRight,
+                        contentDescription = "Next page",
+                        tint = if (currentPage < pageCount - 1) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outlineVariant
+                    )
                 }
             }
 
@@ -700,15 +739,15 @@ private fun ReaderBottomControls(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Quick Theme Swatches
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     val themes = listOf(ReaderTheme.SEPIA, ReaderTheme.WHITE, ReaderTheme.SLATE, ReaderTheme.BLACK)
                     themes.forEach { theme ->
                         val isSelected = readerTheme == theme
                         val swatchColor = when (theme) {
-                            ReaderTheme.SEPIA -> Color(0xFFFBF0D9)
-                            ReaderTheme.WHITE -> Color(0xFFFFFFFF)
-                            ReaderTheme.SLATE -> Color(0xFF232833)
-                            ReaderTheme.BLACK -> Color(0xFF000000)
+                            ReaderTheme.SEPIA -> ReaderThemeParchmentBg
+                            ReaderTheme.WHITE -> ReaderThemeWhiteBg
+                            ReaderTheme.SLATE -> ReaderThemeSlateBg
+                            ReaderTheme.BLACK -> ReaderThemeBlackBg
                             else -> MaterialTheme.colorScheme.surface
                         }
 
@@ -726,7 +765,7 @@ private fun ReaderBottomControls(
                                     modifier = Modifier
                                         .size(10.dp)
                                         .clip(CircleShape)
-                                        .background(if (theme == ReaderTheme.SEPIA || theme == ReaderTheme.WHITE) Color.Black else Color.White)
+                                        .background(if (theme == ReaderTheme.SEPIA || theme == ReaderTheme.WHITE) Color(0xFF1D2B50) else Color.White)
                                 )
                             }
                         }
@@ -736,11 +775,13 @@ private fun ReaderBottomControls(
                 // Quick Mode Switch Button
                 OutlinedButton(
                     onClick = onToggleMode,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Text(
                         text = if (readingMode == ReadingMode.CONTINUOUS) "Scroll" else "Pages",
-                        style = MaterialTheme.typography.labelMedium
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -766,6 +807,9 @@ private fun ReaderSettingsBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        scrimColor = Color(0x66141821), // 40% #141821 wash
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
         Column(
@@ -776,7 +820,7 @@ private fun ReaderSettingsBottomSheet(
         ) {
             Text(
                 text = "Reader Settings",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -793,7 +837,12 @@ private fun ReaderSettingsBottomSheet(
                     FilterChip(
                         selected = preferences.readingMode == mode,
                         onClick = { onUpdateMode(mode) },
-                        label = { Text(mode.title) }
+                        shape = RoundedCornerShape(8.dp),
+                        label = { Text(mode.title) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     )
                 }
             }
@@ -815,7 +864,12 @@ private fun ReaderSettingsBottomSheet(
                     FilterChip(
                         selected = preferences.readerTheme == theme,
                         onClick = { onUpdateTheme(theme) },
-                        label = { Text(theme.title) }
+                        shape = RoundedCornerShape(8.dp),
+                        label = { Text(theme.title) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     )
                 }
             }
@@ -834,7 +888,12 @@ private fun ReaderSettingsBottomSheet(
                     FilterChip(
                         selected = preferences.pageSpacing == spacing,
                         onClick = { onUpdateSpacing(spacing) },
-                        label = { Text(spacing.title) }
+                        shape = RoundedCornerShape(8.dp),
+                        label = { Text(spacing.title) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     )
                 }
             }
@@ -853,7 +912,12 @@ private fun ReaderSettingsBottomSheet(
                     FilterChip(
                         selected = preferences.pageMargin == margin,
                         onClick = { onUpdateMargin(margin) },
-                        label = { Text(margin.title) }
+                        shape = RoundedCornerShape(8.dp),
+                        label = { Text(margin.title) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     )
                 }
             }
@@ -872,7 +936,12 @@ private fun ReaderSettingsBottomSheet(
                     FilterChip(
                         selected = preferences.screenOrientation == orientation,
                         onClick = { onUpdateOrientation(orientation) },
-                        label = { Text(orientation.title) }
+                        shape = RoundedCornerShape(8.dp),
+                        label = { Text(orientation.title) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     )
                 }
             }
@@ -910,6 +979,10 @@ private fun ReaderSettingsBottomSheet(
                     value = preferences.inAppBrightness.coerceIn(0.05f, 1.0f),
                     onValueChange = { onUpdateBrightness(it) },
                     valueRange = 0.05f..1.0f,
+                    colors = SliderDefaults.colors(
+                        thumbColor = EditorialGold,
+                        activeTrackColor = EditorialGold
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
             }

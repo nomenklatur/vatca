@@ -2,35 +2,49 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Primary & Brand Colors
-val VatcaCharcoal = Color(0xFF1E242B)
-val VatcaAmber = Color(0xFFD97706)
-val VatcaTerracotta = Color(0xFFC25E3E)
-val VatcaSlate = Color(0xFF334155)
-val VatcaMuted = Color(0xFF64748B)
+// Light Mode Architecture - Serene Editorial Reader
+val EditorialCanvasLight = Color(0xFFFAF9F6) // Unbleached archival paper canvas
+val EditorialSurfaceLight = Color(0xFFFFFFFF) // Reading sheet / card surface
+val EditorialSurfaceVariantLight = Color(0xFFF2F3FE)
+val EditorialPrimaryNavy = Color(0xFF1D2B50) // Foundational brand navy
+val EditorialOnPrimary = Color(0xFFFFFFFF)
+val EditorialPrimaryContainer = Color(0xFF1D2B50)
+val EditorialOnPrimaryContainer = Color(0xFF8593BE)
 
-// Light Palette
-val LightBackground = Color(0xFFF8F9FA)
-val LightSurface = Color(0xFFFFFFFF)
-val LightSurfaceVariant = Color(0xFFEEF1F4)
-val LightOnSurface = Color(0xFF1E293B)
-val LightOnSurfaceVariant = Color(0xFF475569)
-val LightOutline = Color(0xFFCBD5E1)
+val EditorialSage = Color(0xFF78A99B) // Muted sage tertiary accent
+val EditorialSageText = Color(0xFF43665D) // Muted sage text
+val EditorialSageContainer = Color(0xFFBAEDDD)
+val EditorialOnSageContainer = Color(0xFF3D6D61)
 
-// Dark Palette
-val DarkBackground = Color(0xFF111418)
-val DarkSurface = Color(0xFF181C22)
-val DarkSurfaceVariant = Color(0xFF222831)
-val DarkOnSurface = Color(0xFFF1F5F9)
-val DarkOnSurfaceVariant = Color(0xFF94A3B8)
-val DarkOutline = Color(0xFF333D4B)
+val EditorialGold = Color(0xFFE7B63F) // Warm gilding gold for progress & active bookmarks
+val EditorialOnGold = Color(0xFF211600)
+
+val EditorialTextPrimaryLight = Color(0xFF20232B) // High-contrast primary content
+val EditorialTextSecondaryLight = Color(0xFF777B83) // Archival metadata and page counts
+val EditorialHairlineLight = Color(0xFFE7E5DF) // 1dp hairline border
+
+// Dark Mode Architecture (Low-Lux Reading)
+val EditorialCanvasDark = Color(0xFF141821) // Abyssal slate to neutralize OLED glare
+val EditorialSurfaceDark = Color(0xFF1D2330) // Muted dark navy-slate
+val EditorialSurfaceVariantDark = Color(0xFF283042)
+val EditorialPrimaryDark = Color(0xFFB8C5F3) // Softened primary indigo
+val EditorialOnPrimaryDark = Color(0xFF0A193E)
+val EditorialPrimaryContainerDark = Color(0xFF1D2B50)
+
+val EditorialTextPrimaryDark = Color(0xFFF2F1EC) // Softened primary text
+val EditorialTextSecondaryDark = Color(0xFFA5A9B1) // Secondary metadata
+val EditorialHairlineDark = Color(0xFF283042) // Hairline dividers in dark mode
+
+// Error
+val EditorialError = Color(0xFFBA1A1A)
+val EditorialOnError = Color(0xFFFFFFFF)
 
 // Reader Themes
-val ReaderThemeParchmentBg = Color(0xFFFBF0D9)
-val ReaderThemeParchmentText = Color(0xFF3D3222)
+val ReaderThemeParchmentBg = Color(0xFFFAF6EE) // Calm warm parchment
+val ReaderThemeParchmentText = Color(0xFF2C251B)
 val ReaderThemeWhiteBg = Color(0xFFFFFFFF)
-val ReaderThemeWhiteText = Color(0xFF1E293B)
-val ReaderThemeSlateBg = Color(0xFF1E222B)
-val ReaderThemeSlateText = Color(0xFFE2E8F0)
+val ReaderThemeWhiteText = Color(0xFF20232B)
+val ReaderThemeSlateBg = Color(0xFF141821) // Low-lux abyssal slate
+val ReaderThemeSlateText = Color(0xFFF2F1EC)
 val ReaderThemeBlackBg = Color(0xFF000000)
 val ReaderThemeBlackText = Color(0xFFE2E8F0)
