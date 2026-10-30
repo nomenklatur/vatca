@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,18 +19,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -124,30 +125,19 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        AppThemeMode.values().forEach { mode ->
-                            FilterChip(
-                                selected = preferences.appTheme == mode,
-                                onClick = {
-                                    coroutineScope.launch { preferencesManager.setAppTheme(mode) }
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                                label = { Text(mode.title) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            )
-                        }
-                    }
+                    SettingOptionSelector(
+                        options = AppThemeMode.entries,
+                        selectedOption = preferences.appTheme,
+                        onOptionSelected = { mode ->
+                            coroutineScope.launch { preferencesManager.setAppTheme(mode) }
+                        },
+                        labelProvider = { it.title }
+                    )
                 }
             }
 
             item {
-                SectionHeader(icon = Icons.Default.ViewList, title = "Library Defaults")
+                SectionHeader(icon = Icons.AutoMirrored.Filled.ViewList, title = "Library Defaults")
             }
 
             item {
@@ -157,22 +147,14 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        LibraryLayout.values().forEach { layout ->
-                            FilterChip(
-                                selected = preferences.libraryLayout == layout,
-                                onClick = {
-                                    coroutineScope.launch { preferencesManager.setLibraryLayout(layout) }
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                                label = { Text(layout.title) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            )
-                        }
-                    }
+                    SettingOptionSelector(
+                        options = LibraryLayout.entries,
+                        selectedOption = preferences.libraryLayout,
+                        onOptionSelected = { layout ->
+                            coroutineScope.launch { preferencesManager.setLibraryLayout(layout) }
+                        },
+                        labelProvider = { it.title }
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -181,22 +163,14 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        LibrarySort.values().forEach { sort ->
-                            FilterChip(
-                                selected = preferences.librarySort == sort,
-                                onClick = {
-                                    coroutineScope.launch { preferencesManager.setLibrarySort(sort) }
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                                label = { Text(sort.title) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            )
-                        }
-                    }
+                    SettingOptionSelector(
+                        options = LibrarySort.entries,
+                        selectedOption = preferences.librarySort,
+                        onOptionSelected = { sort ->
+                            coroutineScope.launch { preferencesManager.setLibrarySort(sort) }
+                        },
+                        labelProvider = { it.title }
+                    )
                 }
             }
 
@@ -211,22 +185,14 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ReaderTheme.values().forEach { theme ->
-                            FilterChip(
-                                selected = preferences.readerTheme == theme,
-                                onClick = {
-                                    coroutineScope.launch { preferencesManager.setReaderTheme(theme) }
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                                label = { Text(theme.title) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            )
-                        }
-                    }
+                    SettingOptionSelector(
+                        options = ReaderTheme.entries,
+                        selectedOption = preferences.readerTheme,
+                        onOptionSelected = { theme ->
+                            coroutineScope.launch { preferencesManager.setReaderTheme(theme) }
+                        },
+                        labelProvider = { it.title }
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -235,22 +201,30 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        ReadingMode.values().forEach { mode ->
-                            FilterChip(
-                                selected = preferences.readingMode == mode,
-                                onClick = {
-                                    coroutineScope.launch { preferencesManager.setReadingMode(mode) }
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                                label = { Text(mode.title) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            )
-                        }
-                    }
+                    SettingOptionSelector(
+                        options = ReadingMode.entries,
+                        selectedOption = preferences.readingMode,
+                        onOptionSelected = { mode ->
+                            coroutineScope.launch { preferencesManager.setReadingMode(mode) }
+                        },
+                        labelProvider = { it.title }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Default Page Switch Animation",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    SettingOptionSelector(
+                        options = com.example.data.model.PageTransition.entries,
+                        selectedOption = preferences.pageTransition,
+                        onOptionSelected = { transition ->
+                            coroutineScope.launch { preferencesManager.setPageTransition(transition) }
+                        },
+                        labelProvider = { it.title }
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -259,22 +233,14 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PageSpacing.values().forEach { spacing ->
-                            FilterChip(
-                                selected = preferences.pageSpacing == spacing,
-                                onClick = {
-                                    coroutineScope.launch { preferencesManager.setPageSpacing(spacing) }
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                                label = { Text(spacing.title) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            )
-                        }
-                    }
+                    SettingOptionSelector(
+                        options = PageSpacing.entries,
+                        selectedOption = preferences.pageSpacing,
+                        onOptionSelected = { spacing ->
+                            coroutineScope.launch { preferencesManager.setPageSpacing(spacing) }
+                        },
+                        labelProvider = { it.title }
+                    )
                 }
             }
 
@@ -300,6 +266,45 @@ fun SettingsScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(28.dp))
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun <T> SettingOptionSelector(
+    options: List<T>,
+    selectedOption: T,
+    onOptionSelected: (T) -> Unit,
+    labelProvider: (T) -> String,
+    modifier: Modifier = Modifier
+) {
+    FlowRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        options.forEach { option ->
+            val isSelected = option == selectedOption
+
+            Surface(
+                onClick = { onOptionSelected(option) },
+                shape = RoundedCornerShape(10.dp),
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                )
+            ) {
+                Text(
+                    text = labelProvider(option),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+                    ),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                )
             }
         }
     }

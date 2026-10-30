@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Left Page - Deep Navy (#1D2B50) -->
+    <path
+        android:fillColor="#1D2B50"
+        android:pathData="M 28,30 C 36,30 46,35 56,40 L 56,80 C 46,72 36,66 28,66 C 25.8,66 24,64.2 24,62 L 24,34 C 24,31.8 25.8,30 28,30 Z" />
+
+    <!-- Center Page - Warm Gilding Gold (#E7B63F) -->
+    <path
+        android:fillColor="#E7B63F"
+        android:pathData="M 42,27 C 48,27 52,30 56,33 L 56,76 C 52,71 48,65 42,60 C 40,58 39,55 39,51 L 39,30 C 39,28.3 40.3,27 42,27 Z" />
+
+    <!-- Right Page - Muted Sage (#78A99B) -->
+    <path
+        android:fillColor="#78A99B"
+        android:pathData="M 58,30 C 68,30 76,32 80,34 C 82.2,35.1 83.5,37.3 83.5,39.8 L 83.5,66 C 83.5,68.2 81.7,70 79.5,70 C 72,70 65,74 58,78 L 58,30 Z" />
+
+</vector>

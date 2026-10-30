@@ -3,10 +3,8 @@ package com.example.ui.library
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,15 +29,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Sort
-import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -49,7 +47,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -74,13 +71,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.R
 import com.example.data.model.LibraryLayout
 import com.example.data.model.LibrarySort
 import com.example.data.model.PdfDocument
@@ -128,39 +128,9 @@ fun LibraryScreen(
                 onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
                 onLayoutChange = { viewModel.setLayoutMode(it) },
                 onSortChange = { viewModel.setSortOrder(it) },
-                onOpenSettings = onOpenSettings
+                onOpenSettings = onOpenSettings,
+                onImportClick = { filePickerLauncher.launch(arrayOf("application/pdf")) }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { filePickerLauncher.launch(arrayOf("application/pdf")) },
-                modifier = Modifier
-                    .height(48.dp)
-                    .testTag("import_pdf_fab"),
-                shape = RoundedCornerShape(12.dp),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                elevation = androidx.compose.material3.FloatingActionButtonDefaults.elevation(
-                    defaultElevation = 2.dp,
-                    pressedElevation = 2.dp
-                )
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Import PDF icon",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Import PDF",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
-                    )
-                }
-            }
         }
     ) { innerPadding ->
         Box(
@@ -212,7 +182,7 @@ fun LibraryScreen(
                 uiState.layoutMode == LibraryLayout.GRID -> {
                     LazyVerticalGrid(
                         columns = GridCells.Adaptive(minSize = 160.dp),
-                        contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 88.dp),
+                        contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 32.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxSize()
@@ -229,8 +199,8 @@ fun LibraryScreen(
 
                 else -> {
                     LazyColumn(
-                        contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 88.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(0.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(uiState.documents, key = { it.id }) { document ->
@@ -303,7 +273,8 @@ private fun LibraryTopBar(
     onSearchQueryChange: (String) -> Unit,
     onLayoutChange: (LibraryLayout) -> Unit,
     onSortChange: (LibrarySort) -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onImportClick: () -> Unit
 ) {
     var showSortMenu by remember { mutableStateOf(false) }
 
@@ -312,6 +283,7 @@ private fun LibraryTopBar(
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
     ) {
+        // App Bar: Only contains "Library" text, Search, and Settings (using non-gear Tune icon)
         TopAppBar(
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.background,
@@ -354,21 +326,12 @@ private fun LibraryTopBar(
                         }
                     )
                 } else {
-                    Column {
-                        Text(
-                            text = "Vatca",
-                            style = MaterialTheme.typography.headlineLarge.copy(
-                                fontWeight = FontWeight.SemiBold
-                            )
+                    Text(
+                        text = "Library",
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            fontWeight = FontWeight.SemiBold
                         )
-                        if (totalCount > 0) {
-                            Text(
-                                text = "$totalCount ${if (totalCount == 1) "volume" else "volumes"}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                    )
                 }
             },
             actions = {
@@ -384,28 +347,75 @@ private fun LibraryTopBar(
                 }
 
                 IconButton(
-                    onClick = {
-                        val nextLayout = if (layoutMode == LibraryLayout.GRID) LibraryLayout.LIST else LibraryLayout.GRID
-                        onLayoutChange(nextLayout)
-                    },
-                    modifier = Modifier.testTag("layout_toggle_button")
+                    onClick = onOpenSettings,
+                    modifier = Modifier.testTag("settings_button")
                 ) {
                     Icon(
-                        imageVector = if (layoutMode == LibraryLayout.GRID) Icons.Default.ViewList else Icons.Default.GridView,
-                        contentDescription = "Toggle library view",
+                        imageVector = Icons.Default.Tune, // Non-gear settings icon
+                        contentDescription = "Settings",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
+        )
 
+        // Header Section below App Bar:
+        // Left: Logo/Icon next to Vatca text
+        // Right: Sort menu | Grid/List toggle | "+ Books" import button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon next to Vatca text
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_vatca_logo),
+                    contentDescription = "Vatca Logo",
+                    modifier = Modifier.size(32.dp),
+                    contentScale = ContentScale.Fit
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = "Vatca",
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    if (totalCount > 0) {
+                        Text(
+                            text = "$totalCount ${if (totalCount == 1) "volume" else "volumes"}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            // Actions: Sort | Grid/List Toggle | "+ Books" Button
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                // Sort Menu Button
                 Box {
                     IconButton(
                         onClick = { showSortMenu = true },
-                        modifier = Modifier.testTag("sort_menu_button")
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("sort_menu_button")
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Sort,
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
                             contentDescription = "Sort library",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
 
@@ -416,7 +426,7 @@ private fun LibraryTopBar(
                         containerColor = MaterialTheme.colorScheme.surface,
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                     ) {
-                        LibrarySort.values().forEach { sort ->
+                        LibrarySort.entries.forEach { sort ->
                             DropdownMenuItem(
                                 text = {
                                     Text(
@@ -436,20 +446,54 @@ private fun LibraryTopBar(
                     }
                 }
 
+                // Grid/List Layout Toggle
                 IconButton(
-                    onClick = onOpenSettings,
-                    modifier = Modifier.testTag("settings_button")
+                    onClick = {
+                        val nextLayout = if (layoutMode == LibraryLayout.GRID) LibraryLayout.LIST else LibraryLayout.GRID
+                        onLayoutChange(nextLayout)
+                    },
+                    modifier = Modifier
+                        .size(36.dp)
+                        .testTag("layout_toggle_button")
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        imageVector = if (layoutMode == LibraryLayout.GRID) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
+                        contentDescription = "Toggle view mode",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                // "+ Books" Button in Header
+                Button(
+                    onClick = onImportClick,
+                    modifier = Modifier
+                        .height(38.dp)
+                        .testTag("import_pdf_fab"),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    contentPadding = PaddingValues(horizontal = 12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add book",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Books",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
                     )
                 }
             }
-        )
+        }
 
-        // Subtle 1dp hairline divider beneath top bar
+        // Hairline divider beneath header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -468,44 +512,90 @@ private fun EmptyLibraryView(onImportClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Surface(
-            modifier = Modifier.size(80.dp),
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.surface,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        // Stacked Archival Paper Composition per Stitch design system
+        Box(
+            modifier = Modifier.size(width = 140.dp, height = 170.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+            // Back Tilted Paper Sheet
+            Surface(
+                modifier = Modifier
+                    .size(width = 110.dp, height = 145.dp)
+                    .graphicsLayer {
+                        rotationZ = -6f
+                        translationX = -12f
+                    },
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {}
+
+            // Foreground Main Paper Sheet
+            Surface(
+                modifier = Modifier.size(width = 115.dp, height = 150.dp),
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                shadowElevation = 2.dp
             ) {
-                Icon(
-                    imageVector = Icons.Default.PictureAsPdf,
-                    contentDescription = "PDF Icon",
-                    modifier = Modifier.size(40.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // Simulated Left Book Crease
+                    Box(
+                        modifier = Modifier
+                            .width(8.dp)
+                            .fillMaxHeight()
+                            .align(Alignment.CenterStart)
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0x14000000), Color.Transparent)
+                                )
+                            )
+                    )
+
+                    // Warm Gilding Gold Bookmark Ribbon extending from top
+                    Box(
+                        modifier = Modifier
+                            .width(6.dp)
+                            .height(36.dp)
+                            .align(Alignment.TopEnd)
+                            .padding(end = 12.dp)
+                            .background(EditorialGold, shape = RoundedCornerShape(bottomStart = 3.dp, bottomEnd = 3.dp))
+                    )
+
+                    // Central Architectural PDF Icon
+                    Icon(
+                        imageVector = Icons.Default.PictureAsPdf,
+                        contentDescription = "PDF Volume",
+                        modifier = Modifier.size(44.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(28.dp))
 
         Text(
             text = "Your Library is Quiet",
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "A focused, paper-first digital sanctuary for your reading. Import PDF documents from your device to begin.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 20.dp),
+            style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Text(
+            text = "A paper-first digital sanctuary for long-form study, research, and reading. Import your PDF documents to begin.",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp),
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
 
         Button(
             onClick = onImportClick,
@@ -621,7 +711,7 @@ private fun PdfGridCard(
                 }
             }
 
-            // Custom Editorial Progress Track (3dp in outlineVariant, active buffer in Warm Gold)
+            // Custom Editorial Progress Track
             EditorialProgressBar(
                 progress = document.progressPercentage / 100f
             )
@@ -729,28 +819,23 @@ private fun PdfListRow(
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
-    Card(
+    // Borderless list row (72dp spec from Serene Editorial Reader design system) with hairline divider
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .testTag("document_row_${document.id}"),
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            .testTag("document_row_${document.id}")
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Thumbnail with simulated crease
             Box(
                 modifier = Modifier
-                    .size(width = 52.dp, height = 70.dp)
+                    .size(width = 48.dp, height = 64.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
@@ -881,6 +966,15 @@ private fun PdfListRow(
                 }
             }
         }
+
+        // Hairline divider inset by 64dp (16dp margin + 48dp thumbnail)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 64.dp)
+                .height(1.dp)
+                .background(MaterialTheme.colorScheme.outlineVariant)
+        )
     }
 }
 
@@ -895,11 +989,14 @@ fun EditorialProgressBar(
             .height(3.dp)
             .background(MaterialTheme.colorScheme.outlineVariant)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(fraction = progress.coerceIn(0f, 1f))
-                .fillMaxHeight()
-                .background(EditorialGold)
-        )
+        val clampedProgress = progress.coerceIn(0f, 1f)
+        if (clampedProgress > 0f) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(fraction = clampedProgress)
+                    .fillMaxHeight()
+                    .background(EditorialGold)
+            )
+        }
     }
 }

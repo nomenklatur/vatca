@@ -174,6 +174,10 @@ class ReaderViewModel(
         viewModelScope.launch { preferencesManager.setReadingMode(mode) }
     }
 
+    fun setPageTransition(transition: com.example.data.model.PageTransition) {
+        viewModelScope.launch { preferencesManager.setPageTransition(transition) }
+    }
+
     fun setPageSpacing(spacing: PageSpacing) {
         viewModelScope.launch { preferencesManager.setPageSpacing(spacing) }
     }

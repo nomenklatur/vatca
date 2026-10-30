@@ -13,6 +13,7 @@ import com.example.data.model.LibraryLayout
 import com.example.data.model.LibrarySort
 import com.example.data.model.PageMargin
 import com.example.data.model.PageSpacing
+import com.example.data.model.PageTransition
 import com.example.data.model.ReaderTheme
 import com.example.data.model.ReadingMode
 import com.example.data.model.ScreenOrientationPref
@@ -30,6 +31,7 @@ class PreferencesManager(private val context: Context) {
         val LIBRARY_SORT = stringPreferencesKey("library_sort")
         val READER_THEME = stringPreferencesKey("reader_theme")
         val READING_MODE = stringPreferencesKey("reading_mode")
+        val PAGE_TRANSITION = stringPreferencesKey("page_transition")
         val PAGE_SPACING = stringPreferencesKey("page_spacing")
         val PAGE_MARGIN = stringPreferencesKey("page_margin")
         val FIT_MODE = stringPreferencesKey("fit_mode")
@@ -43,6 +45,7 @@ class PreferencesManager(private val context: Context) {
         val librarySortStr = prefs[Keys.LIBRARY_SORT] ?: LibrarySort.RECENTLY_OPENED.name
         val readerThemeStr = prefs[Keys.READER_THEME] ?: ReaderTheme.SEPIA.name
         val readingModeStr = prefs[Keys.READING_MODE] ?: ReadingMode.CONTINUOUS.name
+        val pageTransitionStr = prefs[Keys.PAGE_TRANSITION] ?: PageTransition.CURL_FLIP.name
         val pageSpacingStr = prefs[Keys.PAGE_SPACING] ?: PageSpacing.NORMAL.name
         val pageMarginStr = prefs[Keys.PAGE_MARGIN] ?: PageMargin.COMPACT.name
         val fitModeStr = prefs[Keys.FIT_MODE] ?: FitMode.FIT_TO_WIDTH.name
@@ -55,6 +58,7 @@ class PreferencesManager(private val context: Context) {
             librarySort = safeValueOf(librarySortStr, LibrarySort.RECENTLY_OPENED),
             readerTheme = safeValueOf(readerThemeStr, ReaderTheme.SEPIA),
             readingMode = safeValueOf(readingModeStr, ReadingMode.CONTINUOUS),
+            pageTransition = safeValueOf(pageTransitionStr, PageTransition.CURL_FLIP),
             pageSpacing = safeValueOf(pageSpacingStr, PageSpacing.NORMAL),
             pageMargin = safeValueOf(pageMarginStr, PageMargin.COMPACT),
             fitMode = safeValueOf(fitModeStr, FitMode.FIT_TO_WIDTH),
@@ -81,6 +85,10 @@ class PreferencesManager(private val context: Context) {
 
     suspend fun setReadingMode(mode: ReadingMode) {
         context.dataStore.edit { it[Keys.READING_MODE] = mode.name }
+    }
+
+    suspend fun setPageTransition(transition: PageTransition) {
+        context.dataStore.edit { it[Keys.PAGE_TRANSITION] = transition.name }
     }
 
     suspend fun setPageSpacing(spacing: PageSpacing) {

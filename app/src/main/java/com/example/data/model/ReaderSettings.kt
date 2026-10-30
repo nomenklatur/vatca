@@ -13,6 +13,12 @@ enum class ReadingMode(val title: String) {
     PAGE_BY_PAGE("Page by Page")
 }
 
+enum class PageTransition(val title: String) {
+    CURL_FLIP("Book Page Flip"),
+    SLIDE("Slide"),
+    FADE("Fade")
+}
+
 enum class PageSpacing(val title: String, val dpValue: Int) {
     NONE("None", 0),
     COMPACT("Compact (8dp)", 8),
@@ -61,6 +67,7 @@ data class UserPreferences(
     val librarySort: LibrarySort = LibrarySort.RECENTLY_OPENED,
     val readerTheme: ReaderTheme = ReaderTheme.SEPIA,
     val readingMode: ReadingMode = ReadingMode.CONTINUOUS,
+    val pageTransition: PageTransition = PageTransition.CURL_FLIP,
     val pageSpacing: PageSpacing = PageSpacing.NORMAL,
     val pageMargin: PageMargin = PageMargin.COMPACT,
     val fitMode: FitMode = FitMode.FIT_TO_WIDTH,

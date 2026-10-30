@@ -5,11 +5,17 @@ import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,6 +26,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -322,6 +330,7 @@ private fun ReaderContent(
                 currentPage = state.currentPage,
                 pageMargin = state.preferences.pageMargin,
                 fitMode = state.preferences.fitMode,
+                pageTransition = state.preferences.pageTransition,
                 onPageChange = { page -> viewModel.onPageChanged(page, 0f) },
                 onToggleControls = { viewModel.toggleControls() }
             )
@@ -378,6 +387,7 @@ private fun ReaderContent(
             onDismiss = { showSettingsSheet = false },
             onUpdateTheme = { viewModel.setReaderTheme(it) },
             onUpdateMode = { viewModel.setReadingMode(it) },
+            onUpdateTransition = { viewModel.setPageTransition(it) },
             onUpdateSpacing = { viewModel.setPageSpacing(it) },
             onUpdateMargin = { viewModel.setPageMargin(it) },
             onUpdateFitMode = { viewModel.setFitMode(it) },
@@ -471,6 +481,7 @@ private fun SinglePagePdfView(
     currentPage: Int,
     pageMargin: PageMargin,
     fitMode: FitMode,
+    pageTransition: com.example.data.model.PageTransition,
     onPageChange: (Int) -> Unit,
     onToggleControls: () -> Unit
 ) {
@@ -478,7 +489,7 @@ private fun SinglePagePdfView(
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
 
-    BoxWithConstraints(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(currentPage) {
@@ -528,11 +539,54 @@ private fun SinglePagePdfView(
             ),
         contentAlignment = Alignment.Center
     ) {
-        PdfPageItem(
-            session = session,
-            pageIndex = currentPage,
-            fitMode = fitMode
-        )
+        AnimatedContent(
+            targetState = currentPage,
+            transitionSpec = {
+                val isForward = targetState > initialState
+                when (pageTransition) {
+                    com.example.data.model.PageTransition.CURL_FLIP -> {
+                        (slideInHorizontally(
+                            animationSpec = tween(durationMillis = 420, easing = FastOutSlowInEasing),
+                            initialOffsetX = { fullWidth -> if (isForward) fullWidth else -fullWidth }
+                        ) + fadeIn(animationSpec = tween(300))).togetherWith(
+                            slideOutHorizontally(
+                                animationSpec = tween(durationMillis = 420, easing = FastOutSlowInEasing),
+                                targetOffsetX = { fullWidth -> if (isForward) -fullWidth / 3 else fullWidth / 3 }
+                            ) + fadeOut(animationSpec = tween(300))
+                        )
+                    }
+                    com.example.data.model.PageTransition.SLIDE -> {
+                        (slideInHorizontally(
+                            animationSpec = tween(300),
+                            initialOffsetX = { fullWidth -> if (isForward) fullWidth else -fullWidth }
+                        ) + fadeIn(animationSpec = tween(200))).togetherWith(
+                            slideOutHorizontally(
+                                animationSpec = tween(300),
+                                targetOffsetX = { fullWidth -> if (isForward) -fullWidth else fullWidth }
+                            ) + fadeOut(animationSpec = tween(200))
+                        )
+                    }
+                    com.example.data.model.PageTransition.FADE -> {
+                        fadeIn(animationSpec = tween(300)).togetherWith(fadeOut(animationSpec = tween(300)))
+                    }
+                }
+            },
+            label = "PageFlipTransition"
+        ) { targetPage ->
+            Box(
+                modifier = Modifier.graphicsLayer {
+                    if (pageTransition == com.example.data.model.PageTransition.CURL_FLIP) {
+                        cameraDistance = 16 * density
+                    }
+                }
+            ) {
+                PdfPageItem(
+                    session = session,
+                    pageIndex = targetPage,
+                    fitMode = fitMode
+                )
+            }
+        }
     }
 }
 
@@ -796,6 +850,7 @@ private fun ReaderSettingsBottomSheet(
     onDismiss: () -> Unit,
     onUpdateTheme: (ReaderTheme) -> Unit,
     onUpdateMode: (ReadingMode) -> Unit,
+    onUpdateTransition: (com.example.data.model.PageTransition) -> Unit,
     onUpdateSpacing: (PageSpacing) -> Unit,
     onUpdateMargin: (PageMargin) -> Unit,
     onUpdateFitMode: (FitMode) -> Unit,
@@ -832,20 +887,28 @@ private fun ReaderSettingsBottomSheet(
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ReadingMode.values().forEach { mode ->
-                    FilterChip(
-                        selected = preferences.readingMode == mode,
-                        onClick = { onUpdateMode(mode) },
-                        shape = RoundedCornerShape(8.dp),
-                        label = { Text(mode.title) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
-                }
-            }
+            com.example.ui.settings.SettingOptionSelector(
+                options = ReadingMode.entries,
+                selectedOption = preferences.readingMode,
+                onOptionSelected = { onUpdateMode(it) },
+                labelProvider = { it.title }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Page Switch Animation
+            Text(
+                text = "Page Switch Animation",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            com.example.ui.settings.SettingOptionSelector(
+                options = com.example.data.model.PageTransition.entries,
+                selectedOption = preferences.pageTransition,
+                onOptionSelected = { onUpdateTransition(it) },
+                labelProvider = { it.title }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -856,23 +919,12 @@ private fun ReaderSettingsBottomSheet(
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ReaderTheme.values().forEach { theme ->
-                    FilterChip(
-                        selected = preferences.readerTheme == theme,
-                        onClick = { onUpdateTheme(theme) },
-                        shape = RoundedCornerShape(8.dp),
-                        label = { Text(theme.title) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
-                }
-            }
+            com.example.ui.settings.SettingOptionSelector(
+                options = ReaderTheme.entries,
+                selectedOption = preferences.readerTheme,
+                onOptionSelected = { onUpdateTheme(it) },
+                labelProvider = { it.title }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -883,20 +935,12 @@ private fun ReaderSettingsBottomSheet(
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PageSpacing.values().forEach { spacing ->
-                    FilterChip(
-                        selected = preferences.pageSpacing == spacing,
-                        onClick = { onUpdateSpacing(spacing) },
-                        shape = RoundedCornerShape(8.dp),
-                        label = { Text(spacing.title) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
-                }
-            }
+            com.example.ui.settings.SettingOptionSelector(
+                options = PageSpacing.entries,
+                selectedOption = preferences.pageSpacing,
+                onOptionSelected = { onUpdateSpacing(it) },
+                labelProvider = { it.title }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -907,20 +951,12 @@ private fun ReaderSettingsBottomSheet(
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PageMargin.values().forEach { margin ->
-                    FilterChip(
-                        selected = preferences.pageMargin == margin,
-                        onClick = { onUpdateMargin(margin) },
-                        shape = RoundedCornerShape(8.dp),
-                        label = { Text(margin.title) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
-                }
-            }
+            com.example.ui.settings.SettingOptionSelector(
+                options = PageMargin.entries,
+                selectedOption = preferences.pageMargin,
+                onOptionSelected = { onUpdateMargin(it) },
+                labelProvider = { it.title }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -931,20 +967,12 @@ private fun ReaderSettingsBottomSheet(
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ScreenOrientationPref.values().forEach { orientation ->
-                    FilterChip(
-                        selected = preferences.screenOrientation == orientation,
-                        onClick = { onUpdateOrientation(orientation) },
-                        shape = RoundedCornerShape(8.dp),
-                        label = { Text(orientation.title) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
-                }
-            }
+            com.example.ui.settings.SettingOptionSelector(
+                options = ScreenOrientationPref.entries,
+                selectedOption = preferences.screenOrientation,
+                onOptionSelected = { onUpdateOrientation(it) },
+                labelProvider = { it.title }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
