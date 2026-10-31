@@ -160,6 +160,18 @@ fun LibraryScreen(
                     }
                 }
 
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            strokeWidth = 2.5.dp
+                        )
+                    }
+                }
+
                 uiState.documents.isEmpty() && !uiState.isSearchActive -> {
                     EmptyLibraryView(
                         onImportClick = { filePickerLauncher.launch(arrayOf("application/pdf")) }

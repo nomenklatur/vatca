@@ -8,7 +8,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -539,21 +541,15 @@ private fun SinglePagePdfView(
             ),
         contentAlignment = Alignment.Center
     ) {
-        AnimatedContent(
-            targetState = currentPage,
+        val transition = updateTransition(targetState = currentPage, label = "PageFlipTransition")
+        
+        transition.AnimatedContent(
             transitionSpec = {
                 val isForward = targetState > initialState
                 when (pageTransition) {
                     com.example.data.model.PageTransition.CURL_FLIP -> {
-                        (slideInHorizontally(
-                            animationSpec = tween(durationMillis = 420, easing = FastOutSlowInEasing),
-                            initialOffsetX = { fullWidth -> if (isForward) fullWidth else -fullWidth }
-                        ) + fadeIn(animationSpec = tween(300))).togetherWith(
-                            slideOutHorizontally(
-                                animationSpec = tween(durationMillis = 420, easing = FastOutSlowInEasing),
-                                targetOffsetX = { fullWidth -> if (isForward) -fullWidth / 3 else fullWidth / 3 }
-                            ) + fadeOut(animationSpec = tween(300))
-                        )
+                        // 3D flip animation requires the pages to stay visible during rotation
+                        fadeIn(animationSpec = tween(600)).togetherWith(fadeOut(animationSpec = tween(600)))
                     }
                     com.example.data.model.PageTransition.SLIDE -> {
                         (slideInHorizontally(
@@ -571,12 +567,38 @@ private fun SinglePagePdfView(
                     }
                 }
             },
-            label = "PageFlipTransition"
+            contentKey = { it }
         ) { targetPage ->
+            val rotation by transition.animateFloat(
+                transitionSpec = { 
+                    if (pageTransition == com.example.data.model.PageTransition.CURL_FLIP) {
+                        val isEntering = targetState == targetPage
+                        if (isEntering) {
+                            tween(durationMillis = 300, delayMillis = 300, easing = androidx.compose.animation.core.LinearOutSlowInEasing)
+                        } else {
+                            tween(durationMillis = 300, easing = androidx.compose.animation.core.FastOutLinearInEasing)
+                        }
+                    } else {
+                        tween(0)
+                    }
+                },
+                label = "rotation"
+            ) { state ->
+                if (pageTransition != com.example.data.model.PageTransition.CURL_FLIP) {
+                    0f
+                } else {
+                    if (state == targetPage) 0f
+                    else if (state < targetPage) -90f else 90f
+                }
+            }
+            
             Box(
                 modifier = Modifier.graphicsLayer {
                     if (pageTransition == com.example.data.model.PageTransition.CURL_FLIP) {
                         cameraDistance = 16 * density
+                        rotationY = rotation
+                        // To avoid backface visibility or Z-fighting
+                        alpha = if (kotlin.math.abs(rotation) >= 89.5f) 0f else 1f
                     }
                 }
             ) {

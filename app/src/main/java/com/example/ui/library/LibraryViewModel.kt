@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class LibraryUiState(
+    val isLoading: Boolean = true,
     val documents: List<PdfDocument> = emptyList(),
     val totalDocumentCount: Int = 0,
     val searchQuery: String = "",
@@ -63,6 +64,7 @@ class LibraryViewModel(
         }
 
         LibraryUiState(
+            isLoading = false,
             documents = sorted,
             totalDocumentCount = docs.size,
             searchQuery = filter.query,
