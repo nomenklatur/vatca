@@ -16,3 +16,7 @@
 local.properties
 .env
 debug.keystore
+
+# Local tooling and AI assistant state
+.commandcode/
+.workbuddy-ai/
