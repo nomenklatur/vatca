@@ -14,8 +14,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+keystore.properties
 .env
 debug.keystore
+*.jks
 
 # Local tooling and AI assistant state
 .commandcode/
